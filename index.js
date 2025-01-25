@@ -25,7 +25,6 @@ mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .catch((err) => console.log('MongoDB connection error:', err));
 
 // post Shortener URL 
-const validator = require('validator');
 
 app.post('/api/shorten', async (req, res) => {
   const { originalUrl, customCode } = req.body;
