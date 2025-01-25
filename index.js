@@ -56,6 +56,44 @@ app.post('/api/shorten', async (req, res) => {
   }
 });
 
+// Put Method use to customise a URl 
+app.put('/api/edit/:shortenedCode', async (req, res) => {
+  const { shortenedCode } = req.params;
+  const { newCode } = req.body;
+
+  if (!newCode) {
+    return res.status(400).json({ error: 'New code is required' });
+  }
+
+  try {
+    // Check if the new code is already taken
+    const codeExists = await URL.findOne({ shortenedCode: newCode });
+    if (codeExists) {
+      return res.status(400).json({ error: 'New code is already in use' });
+    }
+
+    // Find the existing record and update it
+    const updatedURL = await URL.findOneAndUpdate(
+      { shortenedCode },
+      { shortenedCode: newCode },
+      { new: true }
+    );
+
+    if (!updatedURL) {
+      return res.status(404).json({ error: 'Shortened code not found' });
+    }
+
+    res.json({
+      message: 'Shortened code updated successfully',
+      updatedUrl: `http://localhost:5000/${newCode}`,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 app.get("/", (req, res) => {
   res.send(" Welcomme to URl shortener API")
 })
