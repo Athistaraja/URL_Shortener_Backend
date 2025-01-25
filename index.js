@@ -25,18 +25,41 @@ mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .catch((err) => console.log('MongoDB connection error:', err));
 
 // post Shortener URL 
+const validator = require('validator');
+
 app.post('/api/shorten', async (req, res) => {
   const { originalUrl, customCode } = req.body;
+
+  // URL validation function
+  const isValidUrl = (url) => {
+    const urlRegex = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(:\d+)?(\/.*)?$/;
+    return urlRegex.test(url);
+  };
 
   // Validate input
   if (!originalUrl) {
     return res.status(400).json({ error: 'Original URL is required' });
   }
 
-  let shortenedCode = customCode || shortid.generate(); // Use custom code if provided
+  if (!isValidUrl(originalUrl)) {
+    return res.status(400).json({ error: 'Invalid URL format' });
+  }
 
   try {
-    // Check if the custom code already exists
+    // Check if the original URL already exists in the database
+    const existingUrl = await URL.findOne({ originalUrl });
+
+    if (existingUrl) {
+      return res.status(200).json({
+        message: 'URL already shortened',
+        shortenedUrl: `http://localhost:5000/${existingUrl.shortenedCode}`,
+      });
+    }
+
+    // Generate a short code if not provided
+    let shortenedCode = customCode || shortid.generate();
+
+    // Check if the custom code is already in use
     const existingCode = await URL.findOne({ shortenedCode });
     if (existingCode) {
       return res.status(400).json({ error: 'Custom code is already in use' });
@@ -55,6 +78,8 @@ app.post('/api/shorten', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+
 
 // Put Method use to customise a URl 
 app.put('/api/edit/:shortenedCode', async (req, res) => {
