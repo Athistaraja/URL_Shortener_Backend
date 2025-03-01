@@ -26,7 +26,7 @@ router.post('/api/shorten', async (req, res) => {
     if (existingUrl) {
       return res.status(200).json({
         message: 'URL already shortened',
-        shortenedUrl: `http://localhost:5000/${existingUrl.shortenedCode}`,
+        shortenedUrl: `https://url-shortener-backend-lyqr.onrender.com/${existingUrl.shortenedCode}`,
       });
     }
 
@@ -42,7 +42,7 @@ router.post('/api/shorten', async (req, res) => {
 
     res.json({
       message: 'URL shortened successfully',
-      shortenedUrl: `http://localhost:5000/${shortenedCode}`,
+      shortenedUrl: `https://url-shortener-backend-lyqr.onrender.com/${shortenedCode}`,
     });
   } catch (err) {
     console.error('Error:', err);
